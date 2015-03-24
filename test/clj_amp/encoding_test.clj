@@ -9,7 +9,12 @@
                      [0x00 0x01 0x61 0x00 0x01 0x40 0x00 0x01 0x62 0x00
                       0x03 0x62 0x61 0x62 0x00 0x00])
                     {"a" [(to-byte-buffer "@")]
-                     "b" [(to-byte-buffer "bab")]}]]
+                     "b" [(to-byte-buffer "bab")]}]
+                   [(to-byte-buffer
+                     [0x00 0x01 0x00 0x00 0x01 0x00 0x00 0x00])
+                    {"\0" [(to-byte-buffer [0x00])]}]
+                   [(to-byte-buffer [0x00 0x00])
+                    {}]]
         encode-box (comp to-byte-buffer (partial encode ampbox-codec))
         decode-box (partial decode ampbox-codec)]
     (testing "Box encoding verification"
