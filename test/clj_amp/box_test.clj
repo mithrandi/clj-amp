@@ -11,23 +11,23 @@
 
 (defn boxes=
   [box1 box2]
-  (on- = (partial map-vals bs/to-byte-buffer) box1 box2))
+  (on- = (partial map-vals gloss.io/to-byte-buffer) box1 box2))
   ;; (every? #(= (->> %1 (get box1) (to-byte-buffer))
   ;;             (->> %1 (get box2) (to-byte-buffer)))
   ;;         (concat (keys box1) (keys box2))))
 
 
 (deftest roundtrip-tests
-  (let [specimens [[(bs/to-byte-buffer
+  (let [specimens [[(gloss.io/to-byte-buffer
                      [0x00 0x01 0x61 0x00 0x01 0x40 0x00 0x01 0x62 0x00
                       0x03 0x62 0x61 0x62 0x00 0x00])
                     {"a" "@" "b" "bab"}]
-                   [(bs/to-byte-buffer
+                   [(gloss.io/to-byte-buffer
                      [0x00 0x01 0x00 0x00 0x01 0x00 0x00 0x00])
-                    {"\0" (bs/to-byte-buffer [0x00])}]
+                    {"\0" (gloss.io/to-byte-buffer [0x00])}]
                    [(byte-array [0x00 0x00])
                     {}]]
-        encode-box (comp bs/to-byte-buffer
+        encode-box (comp gloss.io/to-byte-buffer
                          (partial gloss.io/encode ampbox-codec))
         decode-box (partial gloss.io/decode ampbox-codec)]
     (testing "Box encoding verification"
@@ -42,14 +42,14 @@
   (testing "Empty key"
     (is (thrown+?
          [:type :clj-amp.box/empty-key]
-         (->> {"" ""} validate-box (encode ampbox-codec)))))
+         (->> {"" ""} validate-box (gloss.io/encode ampbox-codec)))))
   (testing "Overlong key"
     (is (thrown+?
          [:type :clj-amp.box/key-too-long]
          (->> {(clojure.string/join (repeat (+ max-key-length 1) "a")) []}
-              validate-box (encode ampbox-codec)))))
+              validate-box (gloss.io/encode ampbox-codec)))))
   (testing "Overlong value"
     (is (thrown+?
          [:type :clj-amp.box/value-too-long]
          (->> {"key" (byte-array (+ max-value-length 1))}
-         validate-box (encode ampbox-codec))))))
+         validate-box (gloss.io/encode ampbox-codec))))))
