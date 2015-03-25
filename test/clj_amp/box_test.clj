@@ -1,6 +1,6 @@
-(ns clj-amp.encoding-test
+(ns clj-amp.box-test
   (:require [clojure.test :refer :all]
-            [clj-amp.encoding :refer :all]
+            [clj-amp.box :refer :all]
             [gloss.io :refer [encode decode to-byte-buffer]]
             [byte-streams :refer [bytes= to-byte-array]]
             [slingshot.test]
@@ -40,15 +40,15 @@
 (deftest invalid-boxes
   (testing "Empty key"
     (is (thrown+?
-         [:type :clj-amp.encoding/empty-key]
+         [:type :clj-amp.box/empty-key]
          (->> {"" ""} validate-box (encode ampbox-codec)))))
   (testing "Overlong key"
     (is (thrown+?
-         [:type :clj-amp.encoding/key-too-long]
+         [:type :clj-amp.box/key-too-long]
          (->> {(clojure.string/join (repeat (+ max-key-length 1) "a")) []}
               validate-box (encode ampbox-codec)))))
   (testing "Overlong value"
     (is (thrown+?
-         [:type :clj-amp.encoding/value-too-long]
+         [:type :clj-amp.box/value-too-long]
          (->> {"key" (byte-array (+ max-value-length 1))}
          validate-box (encode ampbox-codec))))))

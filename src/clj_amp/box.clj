@@ -1,4 +1,4 @@
-(ns clj-amp.encoding
+(ns clj-amp.box
   (:require [gloss.core :refer
              [defcodec repeated compile-frame string finite-block byte-count]]
             [gloss.core.codecs :refer [wrap-suffixed-codec]]
@@ -14,12 +14,12 @@
 (defcodec ampbox-key
   (string "iso-8859-1" :prefix :uint16-be))
 
-
 (defcodec ampbox-value
   (finite-block :uint16-be))
 
 
 (def ampbox-codec
+  "Codec for AMP boxes on the wire"
   (compile-frame
    (wrap-suffixed-codec
     "\0\0"
