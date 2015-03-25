@@ -45,7 +45,3 @@
     (if (> (byte-count value) max-value-length)
       (throw+ {:type ::value-too-long :key key})))
   box)
-
-
-;;(defn command)
-

@@ -3,14 +3,18 @@
             [clj-amp.encoding :refer :all]
             [gloss.io :refer [encode decode to-byte-buffer]]
             [byte-streams :refer [bytes= to-byte-array]]
-            [slingshot.test]))
+            [slingshot.test]
+            [plumbing.core :refer [map-vals]]))
 
+
+(defn on- [op f x y] (op (f x) (f y)))
 
 (defn boxes=
   [box1 box2]
-  (every? #(= (->> %1 (get box1) (to-byte-buffer))
-              (->> %1 (get box2) (to-byte-buffer)))
-          (concat (keys box1) (keys box2))))
+  (on- = (partial map-vals to-byte-buffer) box1 box2))
+  ;; (every? #(= (->> %1 (get box1) (to-byte-buffer))
+  ;;             (->> %1 (get box2) (to-byte-buffer)))
+  ;;         (concat (keys box1) (keys box2))))
 
 
 (deftest roundtrip-tests
