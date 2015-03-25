@@ -5,4 +5,5 @@
             :url "http://spdx.org/licenses/MIT"}
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [gloss "0.2.4"]
-                 [aleph "0.4.0-beta3"]])
+                 [aleph "0.4.0-beta3"]
+                 [slingshot "0.12.2"]])
