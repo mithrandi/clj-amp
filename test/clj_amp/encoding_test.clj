@@ -6,15 +6,10 @@
             [slingshot.test]))
 
 
-(defn update-map [f m]
-  (reduce-kv (fn [m k v]
-               (assoc m k (f v))) {} m))
-
-
 (defn boxes=
   [box1 box2]
-  (every? #(= (-> %1 (get box1) (to-byte-buffer))
-              (-> %1 (get box2) (to-byte-buffer)))
+  (every? #(= (->> %1 (get box1) (to-byte-buffer))
+              (->> %1 (get box2) (to-byte-buffer)))
           (concat (keys box1) (keys box2))))
 
 
@@ -25,7 +20,7 @@
                     {"a" "@" "b" "bab"}]
                    [(to-byte-buffer
                      [0x00 0x01 0x00 0x00 0x01 0x00 0x00 0x00])
-                    {(to-byte-array "\0") (to-byte-buffer [0x00])}]
+                    {"\0" (to-byte-buffer [0x00])}]
                    [(byte-array [0x00 0x00])
                     {}]]
         encode-box (comp to-byte-buffer (partial encode ampbox-codec))

@@ -4,16 +4,15 @@
             [gloss.core.codecs :refer [wrap-suffixed-codec]]
             [slingshot.slingshot :refer [throw+]]))
 
+
 (def max-key-length 0xff)
+
 
 (def max-value-length 0xffff)
 
 
-(def ampbox-key
-  (compile-frame
-   (finite-block :uint16-be)
-   identity
-   byte-streams/to-byte-array))
+(defcodec ampbox-key
+  (string "iso-8859-1" :prefix :uint16-be))
 
 
 (defcodec ampbox-value
