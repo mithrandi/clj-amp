@@ -29,7 +29,7 @@
       [ampbox-key ampbox-value]
       :prefix :none)))
    vec
-   (partial into (array-map))))
+   (partial into {})))
 
 
 (defn validate-box

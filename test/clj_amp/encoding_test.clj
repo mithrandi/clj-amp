@@ -13,15 +13,16 @@
 
 (defn boxes=
   [box1 box2]
-  (every? #(= (-> %1 (get box1) (to-byte-buffer)) (-> %1 (get box2) (to-byte-buffer))) (concat (keys box1) (keys box2))))
+  (every? #(= (-> %1 (get box1) (to-byte-buffer))
+              (-> %1 (get box2) (to-byte-buffer)))
+          (concat (keys box1) (keys box2))))
 
 
 (deftest roundtrip-tests
   (let [specimens [[(to-byte-buffer
                      [0x00 0x01 0x61 0x00 0x01 0x40 0x00 0x01 0x62 0x00
                       0x03 0x62 0x61 0x62 0x00 0x00])
-                    {"a" "@"
-                     "b" "bab"}]
+                    {"a" "@" "b" "bab"}]
                    [(to-byte-buffer
                      [0x00 0x01 0x00 0x00 0x01 0x00 0x00 0x00])
                     {(to-byte-array "\0") (to-byte-buffer [0x00])}]
@@ -32,7 +33,9 @@
     (testing "Box encoding verification"
       (doseq [[encoded decoded] specimens]
         (is (boxes= decoded (decode-box encoded)))
-        (is (bytes= encoded (encode-box decoded)))))))
+        (is (bytes= encoded (encode-box decoded)))
+        (is (boxes= decoded (-> decoded encode-box decode-box)))
+        (is (bytes= encoded (-> encoded decode-box encode-box)))))))
 
 
 (deftest invalid-boxes
