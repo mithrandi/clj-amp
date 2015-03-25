@@ -3,18 +3,7 @@
             [clj-amp.box :refer :all]
             [gloss.io]
             [byte-streams :as bs]
-            [slingshot.test]
-            [plumbing.core :refer [map-vals]]))
-
-
-(defn on- [op f x y] (op (f x) (f y)))
-
-(defn boxes=
-  [box1 box2]
-  (on- = (partial map-vals gloss.io/to-byte-buffer) box1 box2))
-  ;; (every? #(= (->> %1 (get box1) (to-byte-buffer))
-  ;;             (->> %1 (get box2) (to-byte-buffer)))
-  ;;         (concat (keys box1) (keys box2))))
+            [slingshot.test]))
 
 
 (deftest roundtrip-tests

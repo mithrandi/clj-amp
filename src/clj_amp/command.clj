@@ -1,7 +1,7 @@
 (ns clj-amp.command)
 
 (defmacro defcommand
-  "Build an AMP Command
+  "Define an AMP Command.
   Usage: (defcommand
           name
           command-name?
@@ -16,6 +16,7 @@
    `(def ~defname (build-command ~command-name ~arguments ~return-value))))
 
 (defn build-command
-  ""
+  "Build an AMP Command."
   [command-name arguments return-value]
   {:name command-name :arguments arguments :return-value return-value})
+

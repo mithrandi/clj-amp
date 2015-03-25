@@ -2,7 +2,8 @@
   (:require [gloss.core :refer
              [defcodec repeated compile-frame string finite-block byte-count]]
             [gloss.core.codecs :refer [wrap-suffixed-codec]]
-            [slingshot.slingshot :refer [throw+]]))
+            [slingshot.slingshot :refer [throw+]]
+            [plumbing.core :refer [map-vals]]))
 
 
 (def max-key-length 0xff)
@@ -13,6 +14,7 @@
 
 (defcodec ampbox-key
   (string "iso-8859-1" :prefix :uint16-be))
+
 
 (defcodec ampbox-value
   (finite-block :uint16-be))
@@ -45,3 +47,12 @@
     (if (> (byte-count value) max-value-length)
       (throw+ {:type ::value-too-long :key key})))
   box)
+
+
+(defn on- [op f x y] (op (f x) (f y)))
+
+
+(defn boxes=
+  "Compare two boxes for equality"
+  [box1 box2]
+  (on- = (partial map-vals gloss.io/to-byte-buffer) box1 box2))
