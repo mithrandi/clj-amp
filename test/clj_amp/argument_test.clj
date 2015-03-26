@@ -53,4 +53,11 @@
                 {"datetime" "2012-01-23T12:34:56.054000+00:00"})
     (is (= (t/date-time 2012 01 23 13 57 56 54)
            (from-box {:type ::a/date-time :name "datetime"}
-                     {"datetime" "2012-01-23T12:34:56.054-01:23"})))))
+                     {"datetime" "2012-01-23T12:34:56.054-01:23"}))))
+  (testing "amp-list"
+    (roundtrips {:type ::a/list :name "list" :of ::a/integer}
+                [1 20 500]
+                {"list" (gloss.io/to-byte-buffer
+                         (byte-array [0x00 0x01 0x31
+                                      0x00 0x02 0x32 0x30
+                                      0x00 0x03 0x35 0x30 0x30]))})))

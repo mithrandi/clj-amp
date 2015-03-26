@@ -4,14 +4,8 @@
             [clj-time.format :as f]))
 
 
-(defmulti to-box
-  "Serialize a Command argument to a map of Box keys/values."
-  (fn [argument value] (:type argument)))
-
-
-(defmethod to-box ::bytes
-  [argument value]
-  {(:name argument) value})
+(defn argument-or-type
+  [a] (if (map? a) a {:type a}))
 
 
 (defmulti from-box
@@ -19,20 +13,50 @@
   (fn [argument box] (:type argument)))
 
 
-(defmethod from-box ::bytes
+(defmulti to-box
+  "Serialize a Command argument to a map of Box keys/values."
+  (fn [argument value] (:type argument)))
+
+
+(defmulti from-bytes
+  "Deserialize an argument from a single value."
+  (fn [argument value] (:type argument)))
+
+
+(defmulti to-bytes
+  "Serialize an argument as a single value"
+  (fn [argument value] (:type argument)))
+
+
+(defmethod from-box :default
   [argument box]
-  (get box (:name argument)))
+  (from-bytes argument (get box (:name argument))))
+
+
+(defmethod to-box :default
+  [argument value]
+  {(:name argument) (to-bytes argument value)})
+
+
+(defmethod from-bytes ::bytes
+  [argument value]
+  value)
+
+
+(defmethod to-bytes ::bytes
+  [argument value]
+  value)
 
 
 (defn defargument
   "Define an AMP argument type using a gloss codec."
   [type codec]
-  (defmethod to-box type
+  (defmethod to-bytes type
      [argument value]
-     {(:name argument) (gloss.io/encode codec value)})
-  (defmethod from-box type
-     [argument box]
-     (gloss.io/decode codec (get box (:name argument)))))
+     (gloss.io/encode codec value))
+  (defmethod from-bytes type
+     [argument value]
+     (gloss.io/decode codec value)))
 
 
 ;; TODO: Make this use a BigNum if necessary
@@ -72,3 +96,26 @@
    (g/string :ascii)
    (partial f/unparse amp-time-formatter)
    (partial f/parse amp-time-formatter)))
+
+
+(g/defcodec- amp-list
+  (g/compile-frame
+   (g/repeated (g/finite-block :uint16-be) :prefix :none)))
+
+
+;; Corresponds to ListOf() in the Python implementation
+(defmethod from-bytes ::list
+  [argument value]
+  (map (partial from-bytes (argument-or-type (:of argument)))
+       (gloss.io/decode amp-list value)))
+
+
+(defmethod to-bytes ::list
+  [argument value]
+  (gloss.io/encode amp-list
+                   (map (partial to-bytes (argument-or-type (:of argument)))
+                        value)))
+
+
+;; Corresponds to AmpList() in the Python implementation, which has a terribly
+;; confusing name.
