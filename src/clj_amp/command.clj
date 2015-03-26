@@ -8,29 +8,36 @@
   "Define an AMP Command.
   Usage: (defcommand
           name
-          command-name?
           {argument-name {:type argument-type
                           :name amp-argument-name?
                           ...}
-           ...}
-           return-value)"
-  ([defname arguments return-value]
-   `(def ~defname (build-command ~(name defname) ~arguments ~return-value)))
-  ([defname command-name arguments return-value]
-   `(def ~defname (build-command ~command-name ~arguments ~return-value))))
+           ...}?
+          {response-name {:type argument-type
+                        :name amp-response-name?
+           ...}?)
+          :command-name command-name?"
+  [defname arguments response & {:keys [command-name]
+                                 :or {command-name (name defname)}}]
+  `(def ~defname
+     (build-command ~command-name ~arguments ~response)))
 
 
 (defn build-command
   "Build an AMP Command."
-  [command-name arguments return-value]
+  [command-name arguments response]
   {:name command-name
-   :arguments arguments
-   :response return-value})
+   :arguments
+   (for-map [[argument-name argument] arguments]
+            argument-name
+            (assoc argument
+                   :name
+                   (get argument :name (name argument-name))))
+   :response response})
 
 
 (defn from-box
-  [command box]
-  (for-map [[name argument] (:arguments command)
+  [arguments box]
+  (for-map [[name argument] arguments
             :let [value (a/from-box argument box)]
             :when (not (nil? value))]
            name
@@ -38,10 +45,10 @@
 
 
 (defn to-box
-  [command values]
+  [arguments values]
   (apply
    merge
-   (for [[name argument] (:arguments command)]
+   (for [[name argument] arguments]
      (let [value (get values name)]
        (if (nil? value)
          (if (:optional? argument)

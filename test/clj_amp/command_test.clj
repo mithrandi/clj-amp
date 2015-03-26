@@ -7,7 +7,12 @@
 
 (defcommand my-cool-command
   {:named   {:name "name" :type ::a/integer}
-   :unnamed {:type ::a/string :optional? true}} :foo)
+   :unnamed {:type ::a/string :optional? true}}
+  {})
+
+
+(defcommand named-command
+  {} {} :command-name "lalala")
 
 
 (deftest command-definition
@@ -17,21 +22,23 @@
             "my-cool-command"
             {:named   {:name "name" :type ::a/integer}
              :unnamed {:type ::a/string :optional? true}}
-            :foo)
+            {})
            {:name "my-cool-command"
             :arguments {:named   {:name "name"
                                   :type ::a/integer}
-                        :unnamed {
+                        :unnamed {:name "unnamed"
                                   :type ::a/string
                                   :optional? true}}
-            :response :foo}))))
+            :response {}}))
+    (is (= (:name named-command)
+           "lalala"))))
 
 
 (deftest command-parsing
   (testing "Command parsing"
     (let [input  {:named 42}
           output {"name" (byte-array [0x34 0x32])}]
-      (is (boxes= (to-box my-cool-command input)
+      (is (boxes= (to-box (:arguments my-cool-command) input)
                   output))
       (is (= input
-             (from-box my-cool-command output))))))
+             (from-box (:arguments my-cool-command) output))))))
