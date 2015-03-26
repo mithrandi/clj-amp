@@ -57,3 +57,10 @@
 
 (defargument ::string
   (g/compile-frame (g/string :utf-8)))
+
+
+(defargument ::boolean
+  (g/compile-frame
+   (g/string :utf-8)
+   #(if %1 "True" "False")
+   (partial = "True")))

@@ -32,4 +32,8 @@
   (testing "string"
     (roundtrips {:type ::a/string :name "str"}
                 "x: \u2603"
-                {"str" (gloss.io/to-byte-buffer (byte-array [0x78 0x3a 0x20 0xe2 0x98 0x83]))})))
+                {"str" (gloss.io/to-byte-buffer (byte-array [0x78 0x3a 0x20 0xe2 0x98 0x83]))}))
+  (testing "boolean"
+    (roundtrips {:type ::a/boolean :name "bool"}
+                true
+                {"bool" "True"})))
