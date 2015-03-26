@@ -11,11 +11,11 @@
           {argument-name {:type argument-type
                           :name amp-argument-name?
                           ...}
-           ...}?
+           ...}
           {response-name {:type argument-type
-                        :name amp-response-name?
-           ...}?)
-          :command-name command-name?"
+                          :name amp-response-name?
+                          ...}
+          :command-name command-name?)"
   [defname arguments response & {:keys [command-name]
                                  :or {command-name (name defname)}}]
   `(def ~defname
