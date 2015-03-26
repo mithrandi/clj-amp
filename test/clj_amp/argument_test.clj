@@ -40,4 +40,8 @@
   (testing "float"
     (roundtrips {:type ::a/float :name "float"}
                 -123.40000000000002
-                {"float" "-123.40000000000002"})))
+                {"float" "-123.40000000000002"}))
+  (testing "decimal"
+    (roundtrips {:type ::a/decimal :name "dec"}
+                123.450M
+                {"dec" "123.450"})))

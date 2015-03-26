@@ -69,3 +69,13 @@
 ;; This is represented as the Clojure double type
 (defargument ::float
   (g/compile-frame (g/string-float :ascii)))
+
+
+(defargument ::decimal
+  (g/compile-frame
+   (g/string :utf-8)
+   str
+   bigdec))
+
+
+;; TODO: Implement DateTime
