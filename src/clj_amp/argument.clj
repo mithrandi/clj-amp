@@ -1,7 +1,8 @@
 (ns clj-amp.argument
   (:require [gloss.core :as g]
             [gloss.io]
-            [clj-time.format :as f]))
+            [clj-time.format :as f]
+            [slingshot.slingshot :refer [throw+]]))
 
 
 (defn argument-or-type
@@ -30,7 +31,11 @@
 
 (defmethod from-box :default
   [argument box]
-  (from-bytes argument (get box (:name argument))))
+  (let [name (:name argument)]
+    (if (contains? box name)
+      (from-bytes argument (get box name))
+      (when-not (:optional? argument)
+        (throw+ {:type ::missing-argument :name name})))))
 
 
 (defmethod to-box :default
