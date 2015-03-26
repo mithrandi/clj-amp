@@ -64,3 +64,8 @@
    (g/string :utf-8)
    #(if %1 "True" "False")
    (partial = "True")))
+
+
+;; This is represented as the Clojure double type
+(defargument ::float
+  (g/compile-frame (g/string-float :ascii)))

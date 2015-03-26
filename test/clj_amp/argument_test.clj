@@ -36,4 +36,8 @@
   (testing "boolean"
     (roundtrips {:type ::a/boolean :name "bool"}
                 true
-                {"bool" "True"})))
+                {"bool" "True"}))
+  (testing "float"
+    (roundtrips {:type ::a/float :name "float"}
+                -123.40000000000002
+                {"float" "-123.40000000000002"})))
