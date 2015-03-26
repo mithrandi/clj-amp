@@ -4,14 +4,6 @@
             [clj-amp.box :refer [boxes=]]
             [clj-time.core :as t]))
 
-;; (deftest command-definition
-;;   (testing "Command definition"
-;;     (is (= my-cool-command
-;;            (build-command "my-cool-command" {} :foo)
-;;            {:name "my-cool-command"
-;;             :arguments {}
-;;             :return-value :foo}))))
-
 
 (defn roundtrips
   [argument value serialized]

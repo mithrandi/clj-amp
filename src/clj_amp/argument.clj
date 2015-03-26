@@ -106,15 +106,18 @@
 ;; Corresponds to ListOf() in the Python implementation
 (defmethod from-bytes ::list
   [argument value]
-  (map (partial from-bytes (argument-or-type (:of argument)))
-       (gloss.io/decode amp-list value)))
+  (let [of (argument-or-type (:of argument))]
+    (->> value
+         (gloss.io/decode amp-list)
+         (map (partial from-bytes of)))))
 
 
 (defmethod to-bytes ::list
   [argument value]
-  (gloss.io/encode amp-list
-                   (map (partial to-bytes (argument-or-type (:of argument)))
-                        value)))
+  (let [of (argument-or-type (:of argument))]
+    (->> value
+         (map (partial to-bytes of))
+         (gloss.io/encode amp-list))))
 
 
 ;; Corresponds to AmpList() in the Python implementation, which has a terribly
