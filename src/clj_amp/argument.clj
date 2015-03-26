@@ -1,22 +1,7 @@
 (ns clj-amp.argument
   (:require [gloss.core :as g]
-            [gloss.io]))
-
-
-(defmacro defcommand
-  "Define an AMP Command.
-  Usage: (defcommand
-          name
-          command-name?
-          {argument-name {:type argument-type
-                          :name amp-argument-name?
-                          ...}
-           ...}
-           return-value)"
-  ([defname arguments return-value]
-   `(def ~defname (build-command ~(name defname) ~arguments ~return-value)))
-  ([defname command-name arguments return-value]
-   `(def ~defname (build-command ~command-name ~arguments ~return-value))))
+            [gloss.io]
+            [clj-time.format :as f]))
 
 
 (defmulti to-box
@@ -61,7 +46,7 @@
 
 (defargument ::boolean
   (g/compile-frame
-   (g/string :utf-8)
+   (g/string :ascii)
    #(if %1 "True" "False")
    (partial = "True")))
 
@@ -73,9 +58,17 @@
 
 (defargument ::decimal
   (g/compile-frame
-   (g/string :utf-8)
+   (g/string :ascii)
    str
    bigdec))
 
 
-;; TODO: Implement DateTime
+(def amp-time-formatter
+  (f/formatter "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZZ"))
+
+
+(defargument ::date-time
+  (g/compile-frame
+   (g/string :ascii)
+   (partial f/unparse amp-time-formatter)
+   (partial f/parse amp-time-formatter)))

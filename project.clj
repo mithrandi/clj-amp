@@ -7,4 +7,5 @@
                  [gloss "0.2.4"]
                  [aleph "0.4.0-beta3"]
                  [slingshot "0.12.2"]
-                 [prismatic/plumbing "0.4.1"]])
+                 [prismatic/plumbing "0.4.1"]
+                 [clj-time "0.9.0"]])

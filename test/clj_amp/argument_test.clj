@@ -1,7 +1,8 @@
 (ns clj-amp.argument-test
   (:require [clojure.test :refer :all]
             [clj-amp.argument :as a :refer :all]
-            [clj-amp.box :refer [boxes=]]))
+            [clj-amp.box :refer [boxes=]]
+            [clj-time.core :as t]))
 
 ;; (deftest command-definition
 ;;   (testing "Command definition"
@@ -32,7 +33,8 @@
   (testing "string"
     (roundtrips {:type ::a/string :name "str"}
                 "x: \u2603"
-                {"str" (gloss.io/to-byte-buffer (byte-array [0x78 0x3a 0x20 0xe2 0x98 0x83]))}))
+                {"str" (gloss.io/to-byte-buffer
+                        (byte-array [0x78 0x3a 0x20 0xe2 0x98 0x83]))}))
   (testing "boolean"
     (roundtrips {:type ::a/boolean :name "bool"}
                 true
@@ -44,4 +46,11 @@
   (testing "decimal"
     (roundtrips {:type ::a/decimal :name "dec"}
                 123.450M
-                {"dec" "123.450"})))
+                {"dec" "123.450"}))
+  (testing "date-time"
+    (roundtrips {:type ::a/date-time :name "datetime"}
+                (t/date-time 2012 01 23 12 34 56 54)
+                {"datetime" "2012-01-23T12:34:56.054000+00:00"})
+    (is (= (t/date-time 2012 01 23 13 57 56 54)
+           (from-box {:type ::a/date-time :name "datetime"}
+                     {"datetime" "2012-01-23T12:34:56.054-01:23"})))))
