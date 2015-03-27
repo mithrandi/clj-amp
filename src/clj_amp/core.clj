@@ -88,10 +88,10 @@
 (defn -main
   [& args]
   @(d/chain
-   (client "localhost" 1234 println)
-   (fn [[callRemote close!]]
-     (d/chain (callRemote sum {:a 42 :b 56})
-              (fn [result]
-                (println result)
-                (close!)
-                nil)))))
+    (client "localhost" 1234 println)
+    (fn [[callRemote close!]]
+      (d/chain (callRemote sum {:a 42 :b 56})
+               (fn [result]
+                 (println result)
+                 (close!)
+                 nil)))))
