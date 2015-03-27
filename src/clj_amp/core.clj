@@ -131,7 +131,8 @@
 (defn simple-server
   [responder port]
   (start-ampbox-server
-   (fn [stream info] (amp-connection responder stream))
+   (fn [stream info]
+     (amp-connection responder stream))
    port))
 
 
