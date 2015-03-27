@@ -73,6 +73,10 @@
   (g/compile-frame (g/string :utf-8)))
 
 
+(defargument ::byte-string
+  (g/compile-frame (g/string :iso-8859-1)))
+
+
 (defargument ::boolean
   (g/compile-frame
    (g/string :ascii)

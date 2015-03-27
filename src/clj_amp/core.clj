@@ -5,7 +5,9 @@
             [manifold.deferred :as d]
             [manifold.stream :as s]
             [aleph.tcp :as tcp]
-            [gloss.io :as io])
+            [gloss.io :as io]
+            [slingshot.slingshot :refer [throw+]]
+            [plumbing.core :refer [for-map]])
   (:gen-class))
 
 
@@ -53,15 +55,38 @@
     d))
 
 
-(defn- box-handler
-  [pendings responder box]
-  (let [tag (->> "_answer"
-                 (get box)
-                 (a/from-bytes {:type ::a/string}))
+(defn- str-from-box
+  [key box]
+  (let [val (get box key)]
+    (if-not (nil? val)
+      (a/from-bytes {:type ::a/byte-string} val))))
+
+
+(defn- dispatch-response
+  [pendings box]
+  (let [tag (str-from-box "_answer" box)
         [d com] (get @pendings tag)
         response (command/from-box (:response com) box)]
     (swap! pendings dissoc tag)
     (d/success! d response)))
+
+
+(defn- dispatch-error
+  [pendings box])
+
+
+(defn- protocol-error
+  [error-type]
+  (throw+ {:type :amp-protocol-error}))
+
+
+(defn- box-handler
+  [pendings responder box]
+  (cond
+    (contains? box "_answer") (dispatch-response pendings box)
+    (contains? box "_error") (dispatch-error pendings box)
+    (contains? box "_command") (responder box)
+    :else (protocol-error :no-empty-boxes)))
 
 
 (defn amp-connection
@@ -76,11 +101,38 @@
     [call-remote' close!]))
 
 
+(defn make-responder
+  [responders]
+  (let [responders'
+        (for-map [[c r] responders]
+                 (:name c)
+                 [c r])]
+    (fn [box]
+      (let [name (str-from-box "_command" box)
+            tag (str-from-box "_ask" box)]
+        (if (contains? responders' name)
+          (let [[command responder]
+                (get responders' name)]
+            (->> box
+                 (command/from-box (:arguments command))
+                 responder
+                 (command/to-box (:response command))
+                 (merge {"_command" name
+                         "_answer" tag}))))))))
+
+
 (defn client
   [host port responder]
   (d/chain
    (ampbox-client host port)
    (partial amp-connection responder)))
+
+
+(defn simple-server
+  [responder port]
+  (start-ampbox-server
+   (fn [stream info] (amp-connection responder stream))
+   port))
 
 
 (command/defcommand sum
@@ -90,7 +142,14 @@
   :command-name "Sum")
 
 
-(defn -main
+(command/defcommand divide
+  {:numerator   {:type ::a/integer}
+   :denominator {:type ::a/integer}}
+  {:result {:type ::a/float}}
+  :command-name "Divide")
+
+
+(defn -example-client
   [& args]
   @(d/chain
     (client "localhost" 1234 println)
@@ -99,3 +158,23 @@
                (fn [result]
                  (println result)
                  (close!))))))
+
+
+(defn- sum'
+  [{:keys [a b]}]
+  (let [total (+ a b)]
+    (println "Did a sum:" a "+" b "=" total)
+    {:total total}))
+
+
+(defn- divide'
+  [{:keys [numerator denominator]}]
+  (let [result (double (/ numerator denominator))]
+    (println "Divided:" numerator "/" denominator "=" result)
+    {:result result}))
+
+
+(defn -example-server
+  [& args]
+  (let [responder (make-responder {sum sum' divide divide'})]
+    (simple-server responder 1234)))
