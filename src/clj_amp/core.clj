@@ -40,34 +40,40 @@
     #(swap! a inc)))
 
 
+(defn- call-remote
+  [stream pendings tag command arguments]
+  (let [d   (d/deferred)
+        box (command/to-box (:arguments command)
+                            arguments)]
+    (swap! pendings assoc tag [d command])
+    (s/put! stream
+            (merge box
+                   {"_command" (:name command)
+                    "_ask" tag}))
+    d))
+
+
+(defn- box-handler
+  [pendings responder box]
+  (let [tag (->> "_answer"
+                 (get box)
+                 (a/from-bytes {:type ::a/string}))
+        [d com] (get @pendings tag)
+        response (command/from-box (:response com) box)]
+    (swap! pendings dissoc tag)
+    (d/success! d response)))
+
+
 (defn amp-connection
   [responder stream]
   (let [next-tag (make-generator 0)
         pendings (atom {})
-        call-remote (fn [command arguments]
-                      (let [tag (str (next-tag))
-                            d   (d/deferred)
-                            box (command/to-box (:arguments command)
-                                                arguments)]
-                        (swap! pendings assoc tag [d command])
-                        (s/put! stream
-                                (merge box
-                                       {"_command" (:name command)
-                                        "_ask" tag}))
-                        d))
-        close! #(s/close! stream)
-        resp (fn [box]
-               (let [tag (->> "_answer"
-                              (get box)
-                              (a/from-bytes {:type ::a/string}))
-                     [d com] (get @pendings tag)
-                     response (command/from-box (:response com) box)]
-                 (swap! pendings dissoc tag)
-                 (d/success! d response)))]
+        call-remote' #(call-remote stream pendings (str (next-tag)) %1 %2)
+        close! #(s/close! stream)]
     (s/connect
-     (s/map resp stream)
+     (s/map #(box-handler pendings responder %1) stream)
      stream)
-    [call-remote close!]))
+    [call-remote' close!]))
 
 
 (defn client
@@ -92,5 +98,4 @@
       (d/chain (call-remote sum {:a 42 :b 56})
                (fn [result]
                  (println result)
-                 (close!)
-                 nil)))))
+                 (close!))))))
