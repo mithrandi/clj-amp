@@ -4,3 +4,6 @@ cache:
   directories:
     - $HOME/.lein
     - $HOME/.m2
+branches:
+  only:
+    - master
