@@ -44,7 +44,7 @@
   [responder stream]
   (let [next-tag (make-generator 0)
         pendings (atom {})]
-    (let [callRemote (fn [command arguments]
+    (let [call-remote (fn [command arguments]
                        (let [tag (str (next-tag))
                              d   (d/deferred)
                              box (command/to-box (:arguments command)
@@ -68,7 +68,7 @@
       (s/connect
        (s/map resp stream)
        stream)
-      [callRemote close!])))
+      [call-remote close!])))
 
 
 (defn client
@@ -89,8 +89,8 @@
   [& args]
   @(d/chain
     (client "localhost" 1234 println)
-    (fn [[callRemote close!]]
-      (d/chain (callRemote sum {:a 42 :b 56})
+    (fn [[call-remote close!]]
+      (d/chain (call-remote sum {:a 42 :b 56})
                (fn [result]
                  (println result)
                  (close!)
