@@ -20,8 +20,10 @@
     (is (= my-cool-command
            (build-command
             "my-cool-command"
-            {:named   {:name "name" :type ::a/integer}
-             :unnamed {:type ::a/string :optional? true}}
+            {:named   {:name "name"
+                       :type ::a/integer}
+             :unnamed {:type ::a/string
+                       :optional? true}}
             {})
            {:name "my-cool-command"
             :arguments {:named   {:name "name"

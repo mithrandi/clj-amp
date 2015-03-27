@@ -2,6 +2,7 @@
   (:require [gloss.core :refer
              [defcodec repeated compile-frame string finite-block byte-count]]
             [gloss.core.codecs :refer [wrap-suffixed-codec]]
+            [gloss.io]
             [slingshot.slingshot :refer [throw+]]
             [plumbing.core :refer [map-vals]]))
 

@@ -22,17 +22,21 @@
      (build-command ~command-name ~arguments ~response)))
 
 
+(defn- name-defaults
+  [arguments]
+  (for-map [[argument-name argument] arguments]
+            argument-name
+            (assoc argument
+                   :name
+                   (get argument :name (name argument-name)))))
+
+
 (defn build-command
   "Build an AMP Command."
   [command-name arguments response]
   {:name command-name
-   :arguments
-   (for-map [[argument-name argument] arguments]
-            argument-name
-            (assoc argument
-                   :name
-                   (get argument :name (name argument-name))))
-   :response response})
+   :arguments (name-defaults arguments)
+   :response (name-defaults response)})
 
 
 (defn from-box
