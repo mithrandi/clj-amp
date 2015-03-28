@@ -2,7 +2,8 @@
   (:require [clj-amp.command :as command]
             [clj-amp.core :refer [client simple-server make-responder]]
             [clj-amp.argument :as a]
-            [manifold.deferred :as d]))
+            [manifold.deferred :as d]
+            [manifold.time :as dt]))
 
 
 (command/defcommand sum
@@ -34,7 +35,7 @@
   [{:keys [a b]}]
   (let [total (+ a b)]
     (println "Did a sum:" a "+" b "=" total)
-    {:total total}))
+    (dt/in 2000 #(identity {:total total}))))
 
 
 (defn- divide'

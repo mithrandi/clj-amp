@@ -11,11 +11,25 @@
   (:gen-class))
 
 
+;; Copied from Manifold, unreleased
+(defn realize-each
+  "Takes a stream of potentially deferred values, and returns a stream of realized values."
+  [s]
+  (let [s' (s/stream)]
+    (s/connect-via s
+      (fn [msg]
+        (d/chain msg
+          #(s/put! s' %)))
+      s'
+      {:description {:op "realize-each"}})
+    (s/source-only s')))
+
+
 (defn wrap-duplex-stream
   [protocol s]
   (let [out (s/stream)]
     (s/connect
-      (s/map (partial io/encode protocol) out)
+     (s/map (partial io/encode protocol) out)
       s)
     (s/splice
       out
@@ -99,9 +113,12 @@
         call-remote' #(call-remote stream pendings (str (next-tag)) %1 %2)
         close! #(s/close! stream)]
     (s/connect
-     (s/map
-      #(box/validate-box (box-handler pendings responder %1))
-      stream)
+     (realize-each
+      (s/map
+       #(d/chain
+         (box-handler pendings responder %1)
+         box/validate-box)
+       stream))
      stream)
     [call-remote' close!]))
 
@@ -118,12 +135,12 @@
         (if (contains? responders' name)
           (let [[command responder]
                 (get responders' name)]
-            (->> box
-                 (command/from-box (:arguments command))
-                 responder
-                 (command/to-box (:response command))
-                 (merge {"_command" name
-                         "_answer" tag}))))))))
+            (d/chain (->> box
+                          (command/from-box (:arguments command))
+                          responder)
+                     #(command/to-box (:response command) %)
+                     #(merge % {"_command" name
+                                "_answer" tag}))))))))
 
 
 (defn client
