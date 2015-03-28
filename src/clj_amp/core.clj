@@ -1,5 +1,5 @@
 (ns clj-amp.core
-  (:require [clj-amp.box :refer [ampbox-codec]]
+  (:require [clj-amp.box :as box]
             [clj-amp.command :as command]
             [clj-amp.argument :as a]
             [manifold.deferred :as d]
@@ -26,14 +26,14 @@
   [host port]
   (d/chain
    (tcp/client {:host host, :port port})
-   (partial wrap-duplex-stream ampbox-codec)))
+   (partial wrap-duplex-stream box/ampbox-codec)))
 
 
 (defn- start-ampbox-server
   [handler port]
   (tcp/start-server
     (fn [s info]
-      (handler (wrap-duplex-stream ampbox-codec s) info))
+      (handler (wrap-duplex-stream box/ampbox-codec s) info))
     {:port port}))
 
 
@@ -48,10 +48,12 @@
         box (command/to-box (:arguments command)
                             arguments)]
     (swap! pendings assoc tag [d command])
-    (s/put! stream
-            (merge box
-                   {"_command" (:name command)
-                    "_ask" tag}))
+    (s/put!
+     stream
+     (box/validate-box
+      (merge box
+             {"_command" (:name command)
+              "_ask" tag})))
     d))
 
 
@@ -82,6 +84,7 @@
 
 (defn- box-handler
   [pendings responder box]
+  (box/validate-box box)
   (cond
     (contains? box "_answer") (dispatch-response pendings box)
     (contains? box "_error") (dispatch-error pendings box)
@@ -96,7 +99,9 @@
         call-remote' #(call-remote stream pendings (str (next-tag)) %1 %2)
         close! #(s/close! stream)]
     (s/connect
-     (s/map #(box-handler pendings responder %1) stream)
+     (s/map
+      #(box/validate-box (box-handler pendings responder %1))
+      stream)
      stream)
     [call-remote' close!]))
 
