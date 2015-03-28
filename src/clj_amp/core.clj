@@ -80,8 +80,8 @@
 
 (defn- dispatch-response
   [pendings box]
-  (let [tag (str-from-box "_answer" box)
-        [d com] (get @pendings tag)
+  (let [tag      (str-from-box "_answer" box)
+        [d com]  (get @pendings tag)
         response (command/from-box (:response com) box)]
     (swap! pendings dissoc tag)
     (d/success! d response)))
@@ -100,18 +100,18 @@
   [pendings responder box]
   (box/validate-box box)
   (cond
-    (contains? box "_answer") (dispatch-response pendings box)
-    (contains? box "_error") (dispatch-error pendings box)
+    (contains? box "_answer")  (dispatch-response pendings box)
+    (contains? box "_error")   (dispatch-error pendings box)
     (contains? box "_command") (responder box)
-    :else (protocol-error :no-empty-boxes)))
+    :else                      (protocol-error :no-empty-boxes)))
 
 
 (defn amp-connection
   [responder stream]
-  (let [next-tag (make-generator 0)
-        pendings (atom {})
+  (let [next-tag     (make-generator 0)
+        pendings     (atom {})
         call-remote' #(call-remote stream pendings (str (next-tag)) %1 %2)
-        close! #(s/close! stream)]
+        close!       #(s/close! stream)]
     (s/connect
      (realize-each
       (s/map
@@ -131,7 +131,7 @@
                  [c r])]
     (fn [box]
       (let [name (str-from-box "_command" box)
-            tag (str-from-box "_ask" box)]
+            tag  (str-from-box "_ask" box)]
         (if (contains? responders' name)
           (let [[command responder]
                 (get responders' name)]
