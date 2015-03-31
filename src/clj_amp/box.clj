@@ -62,14 +62,15 @@
   (let [s'  (wrap-duplex-stream ampbox-item-codec s)
         out (s/stream)]
     (s/connect
-     (s/mapcat #(conj (vec %) nil) out)
+     (s/mapcat #(conj (vec (validate-box %)) nil) out)
      s')
     (s/splice
      out
      (s/transform
       (comp (partition-by nil?) 
             (take-nth 2)
-            (map (partial into {})))
+            (map (partial into {}))
+            (map validate-box))
       s'))))
 
 

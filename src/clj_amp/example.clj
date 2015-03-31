@@ -30,10 +30,10 @@
       (d/chain
        (call-remote sum {:a 13 :b 81})
        (fn [r]
-         (prn "Sum:" r)
+         (println "Sum:" r)
          (call-remote divide {:numerator 1234 :denominator 2}))
        (fn [r]
-         (prn "Quotient:" r)
+         (println "Quotient:" r)
          (close!))))))
 
 

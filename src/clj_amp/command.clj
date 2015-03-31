@@ -64,7 +64,7 @@
          (a/to-box argument value))))))
 
 
-(defcommand error
+(defcommand error-command
   {:code {:name "_error_code"
           :type ::a/byte-string}
    :desc {:name "_error_description"
@@ -80,7 +80,7 @@
   (let [{:keys [code desc]
          :or {code unknown-error-code
               desc "No description"}}
-        (from-box (:arguments error) box)
+        (from-box (:arguments error-command) box)
         error-type
         (get (:inv-errors command) code ::unknown-error)]
     (ex-info "Remote AMP error" {:type error-type :description desc})))
@@ -92,7 +92,7 @@
         error-code (get (:errors command) error-type unknown-error-code)
         error-desc (pr-str error)]
     (to-box
-     (:arguments error)
-     {"_error_code"        error-code
-      "_error_description" error-desc})))
+     (:arguments error-command)
+     {:code error-code
+      :desc error-desc})))
 
