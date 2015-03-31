@@ -3,7 +3,7 @@
   :url "https://github.com/mithrandi/clj-codetip"
   :license {:name "Expat (MIT) license"
             :url "http://spdx.org/licenses/MIT"}
-  :dependencies [[org.clojure/clojure "1.6.0"]
+  :dependencies [[org.clojure/clojure "1.7.0-alpha6"]
                  [gloss "0.2.4"]
                  [aleph "0.4.0-beta3"]
                  [slingshot "0.12.2"]

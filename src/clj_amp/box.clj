@@ -1,8 +1,10 @@
 (ns clj-amp.box
   (:require [gloss.core :refer
-             [defcodec repeated compile-frame string finite-block byte-count]]
+             [defcodec header string finite-block byte-count compile-frame nil-frame]]
             [gloss.core.codecs :refer [wrap-suffixed-codec]]
             [gloss.io]
+            [manifold.stream :as s]
+            [manifold.deferred :as d]
             [slingshot.slingshot :refer [throw+]]
             [plumbing.core :refer [map-vals]]))
 
@@ -11,14 +13,6 @@
 
 
 (def max-value-length 0xffff)
-
-
-(defcodec ampbox-key
-  (string "iso-8859-1" :prefix :uint16-be))
-
-
-(defcodec ampbox-value
-  (finite-block :uint16-be))
 
 
 (defn validate-box
@@ -37,17 +31,46 @@
   box)
 
 
-(def ampbox-codec
-  "Codec for AMP boxes on the wire"
-  (compile-frame
-   (wrap-suffixed-codec
-    (byte-array [0x00 0x00])
-    (compile-frame
-     (repeated
-      [ampbox-key ampbox-value]
-      :prefix :none)))
-   (comp vec validate-box)
-   (comp validate-box (partial into {}))))
+(defcodec ampbox-item-codec
+  (header
+   :uint16-be
+   (fn [len]
+     (if (zero? len)
+       nil-frame
+       (compile-frame
+        [(string "iso-8859-1" :length len)
+         (finite-block :uint16-be)])))
+   (fn [tuple]
+     (if (nil? tuple)
+       0
+       (count (first tuple))))))
+
+
+(defn wrap-duplex-stream
+  [protocol s]
+  (let [out (s/stream)]
+    (s/connect
+     (s/map (partial gloss.io/encode protocol) out)
+      s)
+    (s/splice
+      out
+      (gloss.io/decode-stream s protocol))))
+
+
+(defn wrap-ampbox-stream
+  [s]
+  (let [s'  (wrap-duplex-stream ampbox-item-codec s)
+        out (s/stream)]
+    (s/connect
+     (s/mapcat #(conj (vec %) nil) out)
+     s')
+    (s/splice
+     out
+     (s/transform
+      (comp (partition-by nil?) 
+            (take-nth 2)
+            (map (partial into {})))
+      s'))))
 
 
 (defn on- [op f x y] (op (f x) (f y)))

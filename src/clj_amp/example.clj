@@ -43,16 +43,18 @@
     (client "localhost" 1234 (make-responder {}))
     (fn [[call-remote close!]]
       (d/let-flow
-       [sum-result (call-remote sum {:a 13 :b 81})
+       [{sum-result :total} (call-remote sum {:a 13 :b 81})
         quotient (d/catch
-                     (call-remote divide {:numerator 1234 :denominator 2})
-                     clojure.lang.ExceptionInfo
+                   (d/chain
+                    (call-remote divide {:numerator 1234 :denominator 0})
+                    :result)
+                   clojure.lang.ExceptionInfo
                    (fn [e]
                      (if (= ::zero-division (-> e ex-data :type))
                        (do (println "Divided by zero: returning INF")
                            1e1000)
                        (throw+ e))))]
-       (prn "Done with math:" [sum quotient])
+       (println "Done with math:" [sum-result quotient])
        (close!)))))
 
 

@@ -10,29 +10,18 @@
             [plumbing.core :refer [for-map]]))
 
 
-(defn wrap-duplex-stream
-  [protocol s]
-  (let [out (s/stream)]
-    (s/connect
-     (s/map (partial io/encode protocol) out)
-      s)
-    (s/splice
-      out
-      (io/decode-stream s protocol))))
-
-
 (defn- ampbox-client
   [host port]
   (d/chain
    (tcp/client {:host host, :port port})
-   (partial wrap-duplex-stream box/ampbox-codec)))
+   box/wrap-ampbox-stream))
 
 
 (defn- start-ampbox-server
   [handler port]
   (tcp/start-server
     (fn [s info]
-      (handler (wrap-duplex-stream box/ampbox-codec s) info))
+      (handler (box/wrap-ampbox-stream s) info))
     {:port port}))
 
 

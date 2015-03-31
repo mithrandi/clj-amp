@@ -6,7 +6,7 @@
             [slingshot.test]))
 
 
-(deftest roundtrip-tests
+#_(deftest roundtrip-tests
   (let [specimens [[(gloss.io/to-byte-buffer
                      [0x00 0x01 0x61 0x00 0x01 0x40 0x00 0x01 0x62 0x00
                       0x03 0x62 0x61 0x62 0x00 0x00])
@@ -27,7 +27,7 @@
         (is (bs/bytes= encoded (-> encoded decode-box encode-box)))))))
 
 
-(deftest invalid-boxes
+#_(deftest invalid-boxes
   (testing "Empty key"
     (is (thrown+?
          [:type :clj-amp.box/empty-key]
