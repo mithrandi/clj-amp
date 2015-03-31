@@ -3,7 +3,8 @@
             [clj-amp.core :refer [client simple-server make-responder]]
             [clj-amp.argument :as a]
             [manifold.deferred :as d]
-            [manifold.time :as dt]))
+            [manifold.time :as dt]
+            [slingshot.slingshot :refer [try+ throw+]]))
 
 
 (command/defcommand sum
@@ -17,18 +18,42 @@
   {:numerator   {:type ::a/integer}
    :denominator {:type ::a/integer}}
   {:result {:type ::a/float}}
+  :errors {::zero-division "ZERO_DIVISION"}
   :command-name "Divide")
 
 
 (defn -example-client
   [& args]
   @(d/chain
-    (client "localhost" 1234 println)
+    (client "localhost" 1234 (make-responder {}))
     (fn [[call-remote close!]]
-      (d/chain (call-remote sum {:a 42 :b 56})
-               (fn [result]
-                 (println result)
-                 (close!))))))
+      (d/chain
+       (call-remote sum {:a 13 :b 81})
+       (fn [r]
+         (prn "Sum:" r)
+         (call-remote divide {:numerator 1234 :denominator 2}))
+       (fn [r]
+         (prn "Quotient:" r)
+         (close!))))))
+
+
+(defn -example-client-concurrent
+  [& args]
+  @(d/chain
+    (client "localhost" 1234 (make-responder {}))
+    (fn [[call-remote close!]]
+      (d/let-flow
+       [sum-result (call-remote sum {:a 13 :b 81})
+        quotient (d/catch
+                     (call-remote divide {:numerator 1234 :denominator 2})
+                     clojure.lang.ExceptionInfo
+                   (fn [e]
+                     (if (= ::zero-division (-> e ex-data :type))
+                       (do (println "Divided by zero: returning INF")
+                           1e1000)
+                       (throw+ e))))]
+       (prn "Done with math:" [sum quotient])
+       (close!)))))
 
 
 (defn- sum'
@@ -40,9 +65,12 @@
 
 (defn- divide'
   [{:keys [numerator denominator]}]
-  (let [result (double (/ numerator denominator))]
-    (println "Divided:" numerator "/" denominator "=" result)
-    {:result result}))
+  (try+
+   (let [result (double (/ numerator denominator))]
+     (println "Divided:" numerator "/" denominator "=" result)
+     {:result result})
+   (catch ArithmeticException _
+     (throw+ {:type ::zero-division}))))
 
 
 (defn -example-server

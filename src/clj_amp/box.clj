@@ -21,19 +21,6 @@
   (finite-block :uint16-be))
 
 
-(def ampbox-codec
-  "Codec for AMP boxes on the wire"
-  (compile-frame
-   (wrap-suffixed-codec
-    "\0\0"
-    (compile-frame
-     (repeated
-      [ampbox-key ampbox-value]
-      :prefix :none)))
-   vec
-   (partial into {})))
-
-
 (defn validate-box
   "Validate the following invariants of an AMP box:
     - No key is 0 bytes long.
@@ -48,6 +35,19 @@
     (if (> (byte-count value) max-value-length)
       (throw+ {:type ::value-too-long :key key})))
   box)
+
+
+(def ampbox-codec
+  "Codec for AMP boxes on the wire"
+  (compile-frame
+   (wrap-suffixed-codec
+    (byte-array [0x00 0x00])
+    (compile-frame
+     (repeated
+      [ampbox-key ampbox-value]
+      :prefix :none)))
+   (comp vec validate-box)
+   (comp validate-box (partial into {}))))
 
 
 (defn on- [op f x y] (op (f x) (f y)))

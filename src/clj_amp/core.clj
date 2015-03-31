@@ -7,22 +7,32 @@
             [aleph.tcp :as tcp]
             [gloss.io :as io]
             [slingshot.slingshot :refer [throw+]]
-            [plumbing.core :refer [for-map]])
-  (:gen-class))
+            [plumbing.core :refer [for-map]]))
 
 
-;; Copied from Manifold, unreleased
-(defn realize-each
-  "Takes a stream of potentially deferred values, and returns a stream of realized values."
-  [s]
-  (let [s' (s/stream)]
-    (s/connect-via s
+(defn- map'
+  "Like manifold.stream/map, except handles deferreds and closes the stream if an error occurs."
+  ([f s]
+   (let [s' (s/stream)]
+     (s/connect-via
+      s
       (fn [msg]
-        (d/chain msg
-          #(s/put! s' %)))
+        (-> msg
+            (d/chain
+             f
+             #(if (nil? %)
+                (d/success-deferred true)
+                (s/put! s' %)))
+            (d/catch
+                (fn [e]
+                  (s/close! s')
+                  e))))
       s'
-      {:description {:op "realize-each"}})
-    (s/source-only s')))
+      {:description {:op "map'"}})
+     (s/source-only s')))
+  ([f s & rest]
+   (map' #(apply f %)
+         (apply s/zip s rest))))
 
 
 (defn wrap-duplex-stream
@@ -64,10 +74,9 @@
     (swap! pendings assoc tag [d command])
     (s/put!
      stream
-     (box/validate-box
-      (merge box
-             {"_command" (:name command)
-              "_ask" tag})))
+     (merge box
+            {"_command" (:name command)
+             "_ask" tag}))
     d))
 
 
@@ -84,11 +93,18 @@
         [d com]  (get @pendings tag)
         response (command/from-box (:response com) box)]
     (swap! pendings dissoc tag)
-    (d/success! d response)))
+    (d/success! d response)
+    nil))
 
 
 (defn- dispatch-error
-  [pendings box])
+  [pendings box]
+  (let [tag     (str-from-box "_error" box)
+        [d com] (get @pendings tag)
+        error   (command/error-from-box com box)]
+    (swap! pendings dissoc tag)
+    (d/error! d error)
+    nil))
 
 
 (defn- protocol-error
@@ -98,7 +114,6 @@
 
 (defn- box-handler
   [pendings responder box]
-  (box/validate-box box)
   (cond
     (contains? box "_answer")  (dispatch-response pendings box)
     (contains? box "_error")   (dispatch-error pendings box)
@@ -113,12 +128,9 @@
         call-remote' #(call-remote stream pendings (str (next-tag)) %1 %2)
         close!       #(s/close! stream)]
     (s/connect
-     (realize-each
-      (s/map
-       #(d/chain
-         (box-handler pendings responder %1)
-         box/validate-box)
-       stream))
+     (map'
+      #(box-handler pendings responder %)
+      stream)
      stream)
     [call-remote' close!]))
 
@@ -135,12 +147,20 @@
         (if (contains? responders' name)
           (let [[command responder]
                 (get responders' name)]
-            (d/chain (->> box
-                          (command/from-box (:arguments command))
-                          responder)
-                     #(command/to-box (:response command) %)
-                     #(merge % {"_command" name
-                                "_answer" tag}))))))))
+            (-> (command/from-box (:arguments command) box)
+                (d/chain
+                 responder
+                 #(assoc
+                   (command/to-box (:response command) %)
+                   "_answer" tag))
+                (d/catch
+                    #(assoc
+                      (command/error-to-box command %)
+                      "_error" tag))))
+          ({"_command"           name
+            "_error"             tag
+            "_error_code"        "UNHANDLED"
+            "_error_description" "Unhandled command"}))))))
 
 
 (defn client

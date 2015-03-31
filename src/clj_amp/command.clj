@@ -16,10 +16,11 @@
                           :name amp-response-name?
                           ...}
           :command-name command-name?)"
-  [defname arguments response & {:keys [command-name]
-                                 :or {command-name (name defname)}}]
+  [defname arguments response & {:keys [command-name errors]
+                                 :or {command-name (name defname)
+                                      errors       {}}}]
   `(def ~defname
-     (build-command ~command-name ~arguments ~response)))
+     (build-command ~command-name ~arguments ~response ~errors)))
 
 
 (defn- name-defaults
@@ -33,10 +34,12 @@
 
 (defn build-command
   "Build an AMP Command."
-  [command-name arguments response]
-  {:name command-name
-   :arguments (name-defaults arguments)
-   :response (name-defaults response)})
+  [command-name arguments response errors]
+  {:name       command-name
+   :arguments  (name-defaults arguments)
+   :response   (name-defaults response)
+   :errors     errors
+   :inv-errors (clojure.set/map-invert errors)})
 
 
 (defn from-box
@@ -59,4 +62,28 @@
            {}
            (throw+ {:type ::missing-argument :name name}))
          (a/to-box argument value))))))
+
+
+(def unknown-error-code "UNKNOWN")
+
+
+(defn error-from-box
+  [command box]
+  (let [{code "_error_code"
+         desc "_error_description"
+         :or {code unknown-error-code
+              desc "No description"}}
+        box
+        error-type
+        (get (:errors-inv command) code ::unknown-error)]
+    (ex-info {:type error-type :description desc})))
+
+
+(defn error-to-box
+  [command error]
+  (let [error-type (:type (ex-data error))
+        error-code (get (:errors command) error-type unknown-error-code)
+        error-desc (pr-str error)]
+    {"_error_code"        error-code
+     "_error_description" error-desc}))
 
