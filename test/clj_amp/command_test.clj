@@ -8,7 +8,8 @@
 (defcommand my-cool-command
   {:named   {:name "name" :type ::a/integer}
    :unnamed {:type ::a/string :optional? true}}
-  {})
+  {:a       {:type ::a/string}}
+  :errors   {::foo "FOO"})
 
 
 (defcommand named-command
@@ -24,14 +25,19 @@
                        :type ::a/integer}
              :unnamed {:type ::a/string
                        :optional? true}}
-            {})
+            {:a       {:name "a"
+                       :type ::a/string}}
+            {::foo "FOO"})
            {:name "my-cool-command"
-            :arguments {:named   {:name "name"
-                                  :type ::a/integer}
-                        :unnamed {:name "unnamed"
-                                  :type ::a/string
-                                  :optional? true}}
-            :response {}}))
+            :arguments  {:named   {:name "name"
+                                   :type ::a/integer}
+                         :unnamed {:name "unnamed"
+                                   :type ::a/string
+                                   :optional? true}}
+            :response   {:a       {:name "a"
+                                   :type ::a/string}}
+            :errors     {::foo "FOO"}
+            :inv-errors {"FOO" ::foo}}))
     (is (= (:name named-command)
            "lalala"))))
 
