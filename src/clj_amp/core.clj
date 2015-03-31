@@ -10,31 +10,6 @@
             [plumbing.core :refer [for-map]]))
 
 
-(defn- map'
-  "Like manifold.stream/map, except handles deferreds and closes the stream if an error occurs."
-  ([f s]
-   (let [s' (s/stream)]
-     (s/connect-via
-      s
-      (fn [msg]
-        (-> msg
-            (d/chain
-             f
-             #(if (nil? %)
-                (d/success-deferred true)
-                (s/put! s' %)))
-            (d/catch
-                (fn [e]
-                  (s/close! s')
-                  e))))
-      s'
-      {:description {:op "map'"}})
-     (s/source-only s')))
-  ([f s & rest]
-   (map' #(apply f %)
-         (apply s/zip s rest))))
-
-
 (defn wrap-duplex-stream
   [protocol s]
   (let [out (s/stream)]
@@ -128,9 +103,10 @@
         call-remote' #(call-remote stream pendings (str (next-tag)) %1 %2)
         close!       #(s/close! stream)]
     (s/connect
-     (map'
-      #(box-handler pendings responder %)
-      stream)
+     (->> stream
+          (s/map (partial box-handler pendings responder))
+          (s/realize-each)
+          (s/filter (comp not nil?)))
      stream)
     [call-remote' close!]))
 

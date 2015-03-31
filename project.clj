@@ -9,4 +9,4 @@
                  [slingshot "0.12.2"]
                  [prismatic/plumbing "0.4.1"]
                  [clj-time "0.9.0"]
-                 [manifold "0.1.0-beta11"]])
+                 [manifold "0.1.0-SNAPSHOT"]])
