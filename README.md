@@ -38,7 +38,7 @@ is the construct to which it refers.
 
 #### defcommand
 
-A `defcommand` macro is provided for command definitions:
+A `defcommand` macro is provided in `clj-amp.command` for command definitions:
 
 ```clojure
 (defcommand name
@@ -80,15 +80,16 @@ also makes it easier to define your own argument types without worrying about
 clashing with built-in types or custom types from elsewhere.
 
 Argument encoding/decoding is handled by two sets of multimethods in
-`clj-amp.argument`: `to-bytes` / `from-bytes`, and `to-box` / `from-box`.
-Argument types for which the `-bytes` methods are defined can only be encoded
-as a single box item, which allows them to be used in composite structures such
-as `::list`.
+`clj-amp.argument`: `to-bytes` / `from-bytes` (for "simple" types), and
+`to-box` / `from-box` (for "complex" types). Argument types for which the
+`-bytes` methods are defined can only be encoded as a single box item, which
+allows them to be used in composite structures such as `::list`.
 
-The primitive types are as follows:
+The "simple" types are as follows:
 
 - `::integer`
-  An arbitrary-size integer; equivalent to `Integer` in the reference
+
+An arbitrary-size integer; equivalent to `Integer` in the reference
   implementation.
 
   WARNING: Currently represented solely as a `Long`, thus values outside of
@@ -136,6 +137,19 @@ The primitive types are as follows:
   reference implementation. Represented as a Clojure vector. The element type
   is specified by a `:of` item in the argument map; for example, `{:type
   ::a/list :of ::a/integer}` for a list of integer values.
+
+The "complex" types (which cannot be used in composites like `::list`) are as
+follows:
+
+- `::clj-amp.bigbytes/bigbytes`
+
+  A sequence of bytes that is too large to fit into a single AMP item; the
+  bytes will be split over multiple AMP items. Also known as
+  [`BigString`](http://amp-protocol.net/Types/BigString/).
+
+  WARNING: Use of this argument type may have adverse effects on the latency of
+  concurrent requests on the same AMP connection. For more information, see
+  [the AMP website](http://amp-protocol.net/DontPanic/).
 
 
 ### Servers and clients
