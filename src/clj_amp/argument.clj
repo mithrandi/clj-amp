@@ -127,7 +127,3 @@
     (->> value
          (map (partial to-bytes of))
          (gloss.io/encode amp-list))))
-
-
-;; Corresponds to AmpList() in the Python implementation, which has a terribly
-;; confusing name.

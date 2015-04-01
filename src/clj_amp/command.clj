@@ -15,7 +15,9 @@
           {response-name {:type argument-type
                           :name amp-response-name?
                           ...}
-          :command-name command-name?)"
+          :command-name command-name?
+          :errors {::error-type \"ERROR-CODE\"
+                   ...})"
   [defname arguments response & {:keys [command-name errors]
                                  :or {command-name (name defname)
                                       errors       {}}}]
