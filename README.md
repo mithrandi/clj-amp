@@ -66,7 +66,7 @@ A `defcommand` macro is provided in `clj-amp.command` for command definitions:
                  :name amp-response-name?
                  ...}
  :command-name command-name?
- :errors {::error-type \"ERROR-CODE\"
+ :errors {::error-type "ERROR-CODE"
           ...})
 ```
 
