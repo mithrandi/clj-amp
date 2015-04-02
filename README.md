@@ -76,12 +76,12 @@ a map in response; the keys are the same as specified in the command
 definition.
 
 By default, the protocol-level name will be derived from the Clojure-level
-name, but you can pass :command-name with a byte string to override the command
-name itself, or :name with a byte string to override an argument or response
-item name.
+name, but you can pass `:command-name` with a byte string to override the
+command name itself, or `:name` with a byte string to override an argument or
+response item name.
 
 An errors mapping can also be provided; the default is an empty mapping. The
-key in the errors mapping will be used for the :type item in an ex-info
+key in the errors mapping will be used for the `:type` item in an ex-info
 exception; the value is the protocol-level identifier for the error. If you
 need to handle non-ex-info exceptions, you will need to catch these in your
 responder and rethrow as an ex-info exception.
