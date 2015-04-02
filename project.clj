@@ -1,4 +1,4 @@
-(defproject clj-amp "0.1.0-SNAPSHOT"
+(defproject clj-amp/clj-amp "0.9.1-SNAPSHOT"
   :description "Clojure implementation of AMP"
   :url "https://github.com/mithrandi/clj-codetip"
   :license {:name "Expat (MIT) license"
