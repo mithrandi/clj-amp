@@ -13,11 +13,11 @@ A Clojure implementation of the Asynchronous Messaging Protocol, or
 
 An example server and two example clients are provided:
 
-- `lein run -m [clj-amp.example/-example-server](src/clj_amp/example.clj#L78)`
+- `lein run -m` [clj-amp.example/-example-server](src/clj_amp/example.clj#L78)
 
-- `lein run -m [clj-amp.example/-example-client](src/clj_amp/example.clj#L25)`
+- `lein run -m` [clj-amp.example/-example-client](src/clj_amp/example.clj#L25)
 
-- `lein run -m [clj-amp.example/-example-client-concurrent](src/clj_amp/example.clj#L40)`
+- `lein run -m` [clj-amp.example/-example-client-concurrent](src/clj_amp/example.clj#L40)
 
 These will interoperate with each other, as well as the
 [`ampserver.py`](https://twistedmatrix.com/trac/browser/trunk/docs/core/examples/ampserver.py)
