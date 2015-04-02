@@ -17,7 +17,7 @@
    box/wrap-ampbox-stream))
 
 
-(defn- start-ampbox-server
+(defn start-ampbox-server
   [handler port]
   (tcp/start-server
     (fn [s info]

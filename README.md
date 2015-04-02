@@ -9,6 +9,22 @@ A Clojure implementation of the Asynchronous Messaging Protocol, or
 
 ## Usage
 
+### Examples
+
+An example server and two example clients are provided:
+
+- `lein run -m [clj-amp.example/-example-server](src/clj_amp/example.clj#L78)`
+
+- `lein run -m [clj-amp.example/-example-client](src/clj_amp/example.clj#L25)`
+
+- `lein run -m [clj-amp.example/-example-client-concurrent](src/clj_amp/example.clj#L40)`
+
+These will interoperate with each other, as well as the
+[`ampserver.py`](http://twistedmatrix.com/trac/browser/trunk/docs/core/examples/ampserver.py)
+and
+[`ampclient.py`](http://twistedmatrix.com/trac/browser/trunk/docs/core/examples/ampclient.py)
+examples from the Twisted documentation.
+
 ### A note about "byte strings"
 
 The AMP protocol uses sequences of arbitrary bytes in many places that a
@@ -152,10 +168,87 @@ follows:
   [the AMP website](http://amp-protocol.net/DontPanic/).
 
 
-### Servers and clients
+### Servers, clients, and responders
 
-TODO
+#### Connection basics
+
+The AMP protocol is symmetric in that both client and server can send and
+receive commands. Once you have an AMP box stream, call
+`(clj-amp.core/amp-connection responder stream)`. This will return a pair of
+`[call-remote close!]`. You may then use `(call-remote command arguments)` to
+invoke a command (returns a Manifold deferred), and `(close!)` in order to
+close the stream. Calling the `call-remote` function after the stream is closed
+is an error.
+
+`responder` is a function that will be called to handle an incoming `command`
+box; usually you will construct such a function with
+`clj-amp.core/make-responder`, passing a map from commands to responder
+functions. The function for a particular command will be called with a map of
+the (decoded) arguments, and should either return a response map, or a Manifold
+deferred (that will realize with the response).
+
+If you do not need to handle any commands (for example, for a client that only
+intends to issue commands, not receive them), you should use `(make-responder
+{})` in order to ensure that any commands that may be sent in error receive an
+appropriate error response.
+
+#### Higher-level API
+
+In order to make an AMP client connection over TCP, call `(clj-amp.core/client
+host port responder)` where `responder` is a responder function (as returned by
+`clj-amp.core/make-responder`).
+
+In order to run an AMP TCP server, call `(clj-amp.core/simple-server responder
+port)`.
+
+Alternatively, if you need access to the client connection information, you can
+use `(clj-amp.core/start-ampbox-server handler port)`; handler will be called
+with the AMP box stream and the client info as arguments, you may then call
+`(clj-amp.core/amp-connection)` to set up the connection.
 
 ### Defining new argument types
 
-TODO
+The use of multimethods for handling argument encoding and decoding allows for
+extending the built-in set of argument types with your own, by defining your
+own methods.
+
+There are three ways to define a new argument type:
+
+1. Using the `clj-amp.argument/defargument`; this is the preferred way in
+   most cases.
+
+   `defargument` takes a type keyword and a Gloss codec used to encode/decode
+   the argument value. For example, here is how the built-in `::boolean` type
+   is defined:
+
+   ```clojure
+   (defargument ::boolean
+     (g/compile-frame
+      (g/string :ascii)
+      #(if %1 "True" "False")
+      (partial = "True")))
+   ```
+
+   See the [Gloss
+   documentation](https://github.com/ztellman/gloss/wiki/Introduction) for more
+   information about Gloss codecs. A qualified keyword should be used for the
+   type, in order to avoid clashes.
+
+2. Defining `from-bytes` and `to-bytes` methods. This way is preferrable when
+   encoding and decoding using a Gloss codec is not possible for some reason,
+   but your argument can be represented as a single AMP box value.
+
+   `from-bytes` is called with the argument map and the bytes to decode (in
+   native Gloss format, ie. a sequence of byte buffers); it must return the
+   decoded value. `to-bytes` is called with the argument map and the value to
+   encode; it can return the encoded value in any form that Gloss can use as
+   bytes.
+
+3. Defining `from-box` and `to-box` methods. This way is the most flexible, but
+   does not allow the argument type to be used in composite types such as
+   `::list`, and thus should be avoided where possible.
+
+   `from-box` is called with the argument map and the entire command box; it
+   should return the decoded value. `to-box` is called with the argument map
+   and the value to encode; it should return a map of box keys and byte values,
+   which will be merged into the final command box.
