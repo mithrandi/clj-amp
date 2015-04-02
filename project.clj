@@ -9,4 +9,12 @@
                  [slingshot "0.12.2"]
                  [prismatic/plumbing "0.4.1"]
                  [clj-time "0.9.0"]
-                 [manifold "0.1.0-SNAPSHOT"]])
+                 [manifold "0.1.0-SNAPSHOT"]]
+  :deploy-repositories [["releases" :clojars]]
+  :release-tasks [["vcs" "assert-committed"]
+                  ["change" "version" "leiningen.release/bump-version" "release"]
+                  ["vcs" "commit"]
+                  ["vcs" "tag"]
+                  ["deploy"]
+                  ["change" "version" "leiningen.release/bump-version"]
+                  ["vcs" "commit"]])
