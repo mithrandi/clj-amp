@@ -214,7 +214,7 @@ own methods.
 
 There are three ways to define a new argument type:
 
-1. Using the `clj-amp.argument/defargument`; this is the preferred way in
+1. Using `clj-amp.argument/defargument`; this is the preferred way in
    most cases.
 
    `defargument` takes a type keyword and a Gloss codec used to encode/decode
