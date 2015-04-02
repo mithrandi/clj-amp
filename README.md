@@ -6,6 +6,7 @@ A Clojure implementation of the Asynchronous Messaging Protocol, or
 ## Status
 
 [![Build Status](https://travis-ci.org/mithrandi/clj-amp.svg?branch=master)](https://travis-ci.org/mithrandi/clj-amp)
+[![Clojars Project](http://clojars.org/clj-amp/latest-version.svg)](http://clojars.org/clj-amp)
 
 ## Usage
 
