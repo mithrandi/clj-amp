@@ -20,9 +20,9 @@ An example server and two example clients are provided:
 - `lein run -m [clj-amp.example/-example-client-concurrent](src/clj_amp/example.clj#L40)`
 
 These will interoperate with each other, as well as the
-[`ampserver.py`](http://twistedmatrix.com/trac/browser/trunk/docs/core/examples/ampserver.py)
+[`ampserver.py`](https://twistedmatrix.com/trac/browser/trunk/docs/core/examples/ampserver.py)
 and
-[`ampclient.py`](http://twistedmatrix.com/trac/browser/trunk/docs/core/examples/ampclient.py)
+[`ampclient.py`](https://twistedmatrix.com/trac/browser/trunk/docs/core/examples/ampclient.py)
 examples from the Twisted documentation.
 
 ### A note about "byte strings"
