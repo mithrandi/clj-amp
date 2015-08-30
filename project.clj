@@ -8,7 +8,7 @@
                  [aleph "0.4.0"]
                  [slingshot "0.12.2"]
                  [prismatic/plumbing "0.4.4"]
-                 [clj-time "0.10.0"]
+                 [clj-time "0.11.0"]
                  [manifold "0.1.0"]]
   :deploy-repositories [["releases" :clojars]]
   :release-tasks [["vcs" "assert-committed"]
