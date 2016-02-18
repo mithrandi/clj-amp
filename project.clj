@@ -9,7 +9,7 @@
                  [slingshot "0.12.2"]
                  [prismatic/plumbing "0.5.2"]
                  [clj-time "0.11.0"]
-                 [manifold "0.1.1"]]
+                 [manifold "0.1.2"]]
   :plugins [[codox "0.8.13"]]
   :codox {:src-dir-uri "http://github.com/mithrandi/clj-amp/blob/master/"
           :src-linenum-anchor-prefix "L"}
