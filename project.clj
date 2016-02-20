@@ -10,6 +10,10 @@
                  [prismatic/plumbing "0.5.2"]
                  [clj-time "0.11.0"]
                  [manifold "0.1.2"]]
+  :profiles {:1.9 {:dependencies [[org.clojure/clojure "1.9.0-master-SNAPSHOT"]]}
+             :1.8 {:dependencies [[org.clojure/clojure "1.8.0"]]}
+             :1.7 {:dependencies [[org.clojure/clojure "1.7.0"]]}
+
   :plugins [[codox "0.8.13"]]
   :codox {:src-dir-uri "http://github.com/mithrandi/clj-amp/blob/master/"
           :src-linenum-anchor-prefix "L"}
