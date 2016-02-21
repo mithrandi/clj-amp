@@ -16,7 +16,7 @@
   :profiles {:1.9 {:dependencies [[org.clojure/clojure "1.9.0-master-SNAPSHOT"]]}
              :1.8 {:dependencies [[org.clojure/clojure "1.8.0"]]}
              :1.7 {:dependencies [[org.clojure/clojure "1.7.0"]]}}
-  :plugins [[codox "0.8.13"]]
+  :plugins [[codox "0.9.4"]]
   :codox {:src-dir-uri "http://github.com/mithrandi/clj-amp/blob/master/"
           :src-linenum-anchor-prefix "L"}
   :deploy-repositories [["releases" :clojars]]
