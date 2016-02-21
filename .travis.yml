@@ -7,5 +7,14 @@ cache:
 branches:
   only:
     - master
+env:
+  - LEIN_PROFILE=1.7
+  - LEIN_PROFILE=1.8
+  - LEIN_PROFILE=1.9
+matrix:
+  allow_failures:
+  - env: LEIN_PROFILE=1.9
+script:
+  lein with-profile ${LEIN_PROFILE} test
 notifications:
   email: false
