@@ -5,14 +5,12 @@
             :url "http://spdx.org/licenses/MIT"}
   :repositories {"sonatype-oss-public" "https://oss.sonatype.org/content/groups/public/"}
   :dependencies [[org.clojure/clojure "1.7.0"]
-                 [gloss "0.2.5"]
-                 ;; Temporary workaround until gloss dependency is bumped
-                 [potemkin "0.4.3"]
-                 [aleph "0.4.0"]
+                 [gloss "0.2.6"]
+                 [aleph "0.4.1"]
                  [slingshot "0.12.2"]
-                 [prismatic/plumbing "0.5.2"]
+                 [prismatic/plumbing "0.5.3"]
                  [clj-time "0.11.0"]
-                 [manifold "0.1.2"]]
+                 [manifold "0.1.4"]]
   :profiles {:1.9 {:dependencies [[org.clojure/clojure "1.9.0-master-SNAPSHOT"]]}
              :1.8 {:dependencies [[org.clojure/clojure "1.8.0"]]}
              :1.7 {:dependencies [[org.clojure/clojure "1.7.0"]]}}
